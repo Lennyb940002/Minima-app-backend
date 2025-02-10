@@ -2,54 +2,48 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
-import helmet from 'helmet';  // Ajout du middleware Helmet pour la sécurité
-import rateLimit from 'express-rate-limit'; // Ajout du rate limiting
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import { connectDB } from './utils/db';
 import { authRouter } from './routes/auth';
 
-// Load environment variables from .env file
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
 
-// Connect to MongoDB
+// Connexion à MongoDB
 connectDB();
 
-// Configure CORS options
+// Configuration de CORS
 const corsOptions = {
   origin: process.env.CORS_ORIGIN,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
-
-// Middleware
 app.use(cors(corsOptions));
-app.use(helmet()); // Utilisation de Helmet pour améliorer la sécurité
+app.use(helmet());
 app.use(bodyParser.json());
 
-// Rate limiting
+// Protection contre les requêtes abusives
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limite chaque IP à 100 requêtes par fenêtre de 15 minutes
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: 'Too many requests from this IP, please try again later.'
 });
 app.use(limiter);
 
-// Health check route
+// Routes
+app.use('/api', authRouter);
+
+// Route de test
 app.get('/', (req, res) => {
   res.send('<h1>Welcome to the Minima App Backend!</h1>');
 });
 
-// Routes
-app.use('/api', authRouter);
-
-// Default route for 404
-app.use((req, res, next) => {
+// Gestion des erreurs 404
+app.use((req, res) => {
   res.status(404).send('Not Found');
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+export default app;
