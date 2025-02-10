@@ -1,7 +1,16 @@
 import { Router, RequestHandler } from 'express';
 import { AuthService } from '../services/authService';
+import cors from 'cors';
 
 const authRouter = Router();
+
+const corsOptions = {
+    origin: 'https://minima-app-frontend.vercel.app',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 200
+};
 
 interface AuthRequestBody {
     email: string;
@@ -48,7 +57,12 @@ const login: RequestHandler = async (req, res): Promise<void> => {
     }
 };
 
-authRouter.post('/register', register);
-authRouter.post('/login', login);
+// Gestion explicite des requêtes OPTIONS
+authRouter.options('/register', cors(corsOptions));
+authRouter.options('/login', cors(corsOptions));
+
+// Routes principales
+authRouter.post('/register', cors(corsOptions), register);
+authRouter.post('/login', cors(corsOptions), login);
 
 export { authRouter };
