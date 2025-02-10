@@ -2,15 +2,22 @@
   "version": 2,
   "builds": [
     {
-      "src": "index.ts",
+      "src": "app.ts",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "index.ts",
-      "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+      "dest": "app.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "OPTIONS"
+      ],
       "headers": {
         "Access-Control-Allow-Origin": "https://minima-app-frontend.vercel.app",
         "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
