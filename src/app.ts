@@ -1,39 +1,45 @@
+// app.ts
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import { connectDB } from './utils/db';
 import { authRouter } from './routes/auth';
 
-// Load environment variables from .env file
 dotenv.config();
-
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Connect to MongoDB
 connectDB();
 
-// Configure CORS options
 const corsOptions = {
-  origin: '*', // Permettre l'accès depuis n'importe quelle origine
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-  allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
-  credentials: true
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://minima-app.vercel.app']
+    : 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
 
-// Use CORS middleware
 app.use(cors(corsOptions));
-
-// Use bodyParser middleware to parse JSON requests
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(bodyParser.json());
 
-// Routes
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Too many requests from this IP, please try again later.'
+});
+
+app.use(limiter);
 app.use('/api/auth', authRouter);
 
-// Default route for 404
 app.use((req, res, next) => {
-  res.status(404).send('Not Found');
+  res.status(404).json({ error: 'Not Found' });
 });
 
 app.listen(port, () => {
