@@ -30,7 +30,7 @@ mongoose.connect(MONGODB_URI)
 
 // Configure CORS
 const corsOptions = {
-    origin: 'https://your-frontend-url.com', // Remplacez par l'URL de votre frontend déployé
+    origin: 'https://minima-app-frontend.vercel.app/', // Remplacez par l'URL de votre frontend déployé
     optionsSuccessStatus: 200 // Certains navigateurs (IE11, divers SmartTVs) utilisent 204
 };
 
