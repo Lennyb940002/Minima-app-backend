@@ -39,7 +39,7 @@ app.use(limiter);
 
 // Health check route
 app.get('/', (req, res) => {
-  res.json({ message: 'API is running' });
+  res.send('<h1>Welcome to the Minima App Backend!</h1>');
 });
 
 // Routes
