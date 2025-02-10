@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
-import { connectDB } from './utils/db';
+import { connectDB } from './db';
 import { authRouter } from './routes/auth';
 
 // Load environment variables from .env file
