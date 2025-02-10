@@ -1,4 +1,3 @@
-// app.ts
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
@@ -10,18 +9,10 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Connect to MongoDB
 connectDB();
 
-const whitelist = ['https://minima-app-frontend.vercel.app', 'http://localhost:5173'];
 const corsOptions = {
-  origin: function (origin: any, callback: any) {
-    if (whitelist.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: ['https://minima-app-frontend.vercel.app', 'http://localhost:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -30,27 +21,20 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
-// CORS headers middleware
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (whitelist.includes(origin as string)) {
-    res.setHeader('Access-Control-Allow-Origin', origin as string);
-  }
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
+// Base route
+app.get('/', (req, res) => {
+  res.json({ message: 'API is running' });
 });
 
-// Routes
-app.use('/api/auth', authRouter);
+// API routes
+app.use('/api', authRouter);
 
-// Health check route
+// Health check
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-// Error handling middleware
+// Error handling
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Something broke!' });
@@ -60,6 +44,8 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
 app.use((req, res) => {
   res.status(404).json({ error: 'Not Found' });
 });
+
+export default app;
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
