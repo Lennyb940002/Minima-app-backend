@@ -28,7 +28,13 @@ mongoose.connect(MONGODB_URI)
         process.exit(1);
     });
 
-app.use(cors());
+// Configure CORS
+const corsOptions = {
+    origin: 'https://your-frontend-url.com', // Remplacez par l'URL de votre frontend déployé
+    optionsSuccessStatus: 200 // Certains navigateurs (IE11, divers SmartTVs) utilisent 204
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use('/api/auth', authRouter);
