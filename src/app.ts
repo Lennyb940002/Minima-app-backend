@@ -4,8 +4,8 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { connectDB } from './utils/db';
-import { authRouter } from './routes/auth';
+import { connectDB } from './db';
+import { authRouter } from './routes/authRoutes';
 
 dotenv.config();
 
@@ -37,12 +37,12 @@ app.use(limiter);
 app.use('/api', authRouter);
 
 // Route de test
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.send('<h1>Welcome to the Minima App Backend!</h1>');
 });
 
 // Gestion des erreurs 404
-app.use((req, res) => {
+app.use((_req, res) => {
   res.status(404).send('Not Found');
 });
 
