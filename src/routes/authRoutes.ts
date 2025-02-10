@@ -1,55 +1,64 @@
-// authRouter.ts
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/authService';
 
 const authRouter = Router();
 
-// Debugging middleware
-authRouter.use((req, res, next) => {
-  console.log(`Auth request: ${req.method} ${req.url}`);
-  console.log('Headers:', req.headers);
-  console.log('Body:', req.body);
+// Middleware pour le débogage
+authRouter.use((req: Request, _res: Response, next: NextFunction) => {
+  console.log(`Requête Auth : ${req.method} ${req.url}`);
+  console.log('En-têtes :', req.headers);
+  console.log('Corps de la requête :', req.body);
   next();
 });
 
-authRouter.post('/login', async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
-    
-    if (!email || !password) {
-      return res.status(400).json({
-        error: 'Email and password are required'
+// Route pour la connexion (login)
+authRouter.post('/login', (req: Request, res: Response, next: NextFunction) => {
+  (async () => {
+    try {
+      const { email, password } = req.body;
+
+      // Validation des champs
+      if (!email || !password) {
+        return res.status(400).json({
+          error: 'L\'email et le mot de passe sont requis'
+        });
+      }
+
+      // Appel à la méthode login du service AuthService
+      const result = await AuthService.login(email, password);
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error('Erreur lors de la connexion :', error);
+      return res.status(401).json({
+        error: error instanceof Error ? error.message : 'Échec de l\'authentification'
       });
     }
-
-    const result = await AuthService.login(email, password);
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error('Login error:', error);
-    return res.status(401).json({
-      error: error instanceof Error ? error.message : 'Authentication failed'
-    });
-  }
+  })().catch(next);
 });
 
-authRouter.post('/register', async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
-    
-    if (!email || !password) {
+// Route pour l'inscription (register)
+authRouter.post('/register', (req: Request, res: Response, next: NextFunction) => {
+  (async () => {
+    try {
+      const { email, password } = req.body;
+
+      // Validation des champs
+      if (!email || !password) {
+        return res.status(400).json({
+          error: 'L\'email et le mot de passe sont requis'
+        });
+      }
+
+      // Appel à la méthode register du service AuthService
+      const result = await AuthService.register(email, password);
+      return res.status(201).json(result);
+    } catch (error) {
+      console.error('Erreur lors de l\'inscription :', error);
       return res.status(400).json({
-        error: 'Email and password are required'
+        error: error instanceof Error ? error.message : 'Échec de l\'inscription'
       });
     }
-
-    const result = await AuthService.register(email, password);
-    return res.status(201).json(result);
-  } catch (error) {
-    console.error('Registration error:', error);
-    return res.status(400).json({
-      error: error instanceof Error ? error.message : 'Registration failed'
-    });
-  }
+  })().catch(next);
 });
 
 export { authRouter };
