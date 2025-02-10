@@ -8,7 +8,7 @@ import { saleRouter } from './routes/saleRoutes';
 import { productRouter } from './routes/productRoutes';
 import { declarationRouter } from './routes/declarationRoutes';
 import { marketingRouter } from './routes/marketingRoutes';
-const stripeWebhookRouter = require('./routes/stripeWebhook'); // Import Stripe webhook
+const stripeWebhookRouter = require('./routes/stripeWebhook');
 
 dotenv.config();
 
@@ -28,24 +28,41 @@ mongoose.connect(MONGODB_URI)
         process.exit(1);
     });
 
-// Configure CORS
+// Configuration CORS améliorée
 const corsOptions = {
-    origin: 'https://minima-app-frontend.vercel.app/',
-    'https://minima-app-frontend.vercel.app',
-    '*',// Remplacez par l'URL de votre frontend déployé
-    optionsSuccessStatus: 200 // Certains navigateurs (IE11, divers SmartTVs) utilisent 204
+    origin: 'https://minima-app-frontend.vercel.app',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 200
 };
 
+// Middleware CORS global
 app.use(cors(corsOptions));
+
+// Middleware pour gérer les en-têtes CORS de manière plus précise
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 'https://minima-app-frontend.vercel.app');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    next();
+});
+
 app.use(express.json());
 
+// Routes
 app.use('/api/auth', authRouter);
 app.use('/api/stock', stockRouter);
 app.use('/api/sales', saleRouter);
 app.use('/api/products', productRouter);
 app.use('/api/declarations', declarationRouter);
 app.use('/api/marketing', marketingRouter);
-app.use('/api/stripe', stripeWebhookRouter); // Use Stripe routes
+app.use('/api/stripe', stripeWebhookRouter);
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
