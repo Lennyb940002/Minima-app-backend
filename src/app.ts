@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
-import { connectDB } from './db';
+import { connectDB } from './utils/db';
 import { authRouter } from './routes/auth';
 
 // Load environment variables from .env file
@@ -16,9 +16,10 @@ connectDB();
 
 // Configure CORS options
 const corsOptions = {
-  origin: 'https://minima-app-frontend.vercel.app',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+  origin: '*', // Permettre l'accès depuis n'importe quelle origine
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+  credentials: true
 };
 
 // Use CORS middleware
