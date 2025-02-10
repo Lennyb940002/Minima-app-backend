@@ -28,32 +28,30 @@ mongoose.connect(MONGODB_URI)
         process.exit(1);
     });
 
-// Configuration CORS améliorée
-const corsOptions = {
+// Configuration CORS simplifiée
+app.use(cors({
     origin: 'https://minima-app-frontend.vercel.app',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    optionsSuccessStatus: 200
-};
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
-// Middleware CORS global
-app.use(cors(corsOptions));
-
-// Middleware pour gérer les en-têtes CORS de manière plus précise
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'https://minima-app-frontend.vercel.app');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
-    next();
+// Middleware pour gérer les requêtes OPTIONS
+app.options('*', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', 'https://minima-app-frontend.vercel.app');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.status(200).end();
 });
 
 app.use(express.json());
+
+// Middleware de logging
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    next();
+});
 
 // Routes
 app.use('/api/auth', authRouter);
@@ -63,6 +61,15 @@ app.use('/api/products', productRouter);
 app.use('/api/declarations', declarationRouter);
 app.use('/api/marketing', marketingRouter);
 app.use('/api/stripe', stripeWebhookRouter);
+
+// Error handling middleware
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error(err.stack);
+    res.status(500).json({
+        error: 'Something broke!',
+        message: err.message
+    });
+});
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
