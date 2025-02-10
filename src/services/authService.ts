@@ -1,6 +1,5 @@
-// authService.ts
 import { User, IUser } from '../models/User';
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { config } from '../config';
 
 interface AuthResponse {
