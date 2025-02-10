@@ -31,6 +31,11 @@ app.use(bodyParser.json());
 // Routes
 app.use('/api/auth', authRouter);
 
+// Default route for 404
+app.use((req, res, next) => {
+  res.status(404).send('Not Found');
+});
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
