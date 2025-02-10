@@ -2,51 +2,56 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
+import helmet from 'helmet';  // Ajout du middleware Helmet pour la sécurité
+import rateLimit from 'express-rate-limit'; // Ajout du rate limiting
 import { connectDB } from './utils/db';
 import { authRouter } from './routes/auth';
 
+// Load environment variables from .env file
 dotenv.config();
+
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Connect to MongoDB
 connectDB();
 
+// Configure CORS options
 const corsOptions = {
-  origin: ['https://minima-app-frontend.vercel.app', 'http://localhost:5173'],
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://minima-app-frontend.vercel.app']
+    : 'http://localhost:5173',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 
+// Middleware
 app.use(cors(corsOptions));
+app.use(helmet()); // Utilisation de Helmet pour améliorer la sécurité
 app.use(bodyParser.json());
 
-// Base route
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limite chaque IP à 100 requêtes par fenêtre de 15 minutes
+  message: 'Too many requests from this IP, please try again later.'
+});
+app.use(limiter);
+
+// Health check route
 app.get('/', (req, res) => {
   res.json({ message: 'API is running' });
 });
 
-// API routes
+// Routes
 app.use('/api', authRouter);
 
-// Health check
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
+// Default route for 404
+app.use((req, res, next) => {
+  res.status(404).send('Not Found');
 });
-
-// Error handling
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something broke!' });
-});
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ error: 'Not Found' });
-});
-
-export default app;
 
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Server is running on port ${port}`);
 });
