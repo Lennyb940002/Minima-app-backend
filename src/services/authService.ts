@@ -42,7 +42,7 @@ export class AuthService {
   }
 
   static async register(email: string, password: string): Promise<AuthResponse> {
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email }).exec();
     if (existingUser) {
       throw new Error('Email already in use');
     }
@@ -53,7 +53,7 @@ export class AuthService {
   }
 
   static async login(email: string, password: string): Promise<AuthResponse> {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).exec();
     if (!user) {
       throw new Error('Invalid credentials');
     }
@@ -64,29 +64,5 @@ export class AuthService {
     }
 
     return this.formatUserResponse(user);
-  }
-
-  static verifyToken(token: string): JwtPayload {
-    try {
-      return jwt.verify(token, config.jwtSecret) as JwtPayload;
-    } catch (error) {
-      throw new Error('Invalid token');
-    }
-  }
-
-  static async updatePaymentStatus(userId: string): Promise<void> {
-    const user = await User.findById(userId);
-    if (user) {
-      user.hasPaid = true;
-      await user.save();
-    }
-  }
-
-  static async getUserById(userId: string): Promise<IUser> {
-    const user = await User.findById(userId);
-    if (!user) {
-      throw new Error('User not found');
-    }
-    return user;
   }
 }
